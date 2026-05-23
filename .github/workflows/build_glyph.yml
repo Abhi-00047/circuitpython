@@ -1,1 +1,33 @@
+name: Build Glyph Mini 2040 
 
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi             libnewlib-arm-none-eabi build-essential cmake
+          pip install huffman
+
+      - name: Build firmware
+        run: |
+          cd ports/raspberrypi
+          make BOARD=pcbcupid_glyph_mini_2040 -j$(nproc)
+
+      - name: Upload .uf2 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: glyph-mini-2040-firmware
+          path: ports/raspberrypi/build-pcbcupid_mini_2040/firmware.uf2
